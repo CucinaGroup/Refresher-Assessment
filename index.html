@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cucina Monthly Refresher</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#FFFFFF; --surface:#FFFFFF; --sunk:#F6F3F1; --ink:#1F1A17; --muted:#6E6560; --line:#E9E2DE;
+  --red:#D7261E; --red-dark:#A91B15; --red-soft:#FDECEA;
+  --accent:var(--red); --accent-ink:#FFFFFF; --accent-soft:var(--red-soft);
+  --foh:var(--red); --foh-soft:var(--red-soft); --boh:#3A3431; --boh-soft:#F1EDEB;
+  --good:#1D7A45; --good-soft:#E3F4E8; --bad:#B42318; --bad-soft:#FDECEA;
+  --radius:12px;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:800}
+h3{font-size:17px;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:999px}
+.tabs button{border:0;background:transparent;color:var(--muted);font:600 14px var(--body);padding:7px 14px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0 / .12)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;gap:18px}
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px}
+input[type=text],input[type=number],textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:60px}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.row2{grid-template-columns:1fr}}
+.btn{font:600 15px var(--body);border-radius:10px;padding:11px 18px;border:1px solid transparent;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.small{padding:6px 11px;font-size:13px;border-radius:8px}
+.btn.danger{background:transparent;color:var(--bad);border-color:var(--line)}
+.actions{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+
+/* area picker */
+.areas{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:520px){.areas{grid-template-columns:1fr}}
+.area{text-align:left;border:2px solid var(--line);background:var(--bg);border-radius:var(--radius);padding:18px;cursor:pointer;display:flex;flex-direction:column;gap:6px;color:var(--ink);font:inherit}
+.area .code{font-family:var(--display);font-weight:800;font-size:30px;line-height:1}
+.area.foh .code{color:var(--foh)} .area.boh .code{color:var(--boh)}
+.area.foh[aria-pressed="true"]{border-color:var(--foh);background:var(--foh-soft)}
+.area.boh[aria-pressed="true"]{border-color:var(--boh);background:var(--boh-soft)}
+.area small{color:var(--muted);font-size:13px}
+
+/* quiz */
+.progress{display:flex;flex-direction:column;gap:8px}
+.bar{height:6px;background:var(--sunk);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--area,var(--accent));transition:width .25s}
+.qmeta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.05em;padding:3px 9px;border-radius:999px}
+.chip.FOH{background:var(--foh-soft);color:var(--foh)} .chip.BOH{background:var(--boh-soft);color:var(--boh)}
+.chip.pass{background:var(--good-soft);color:var(--good)} .chip.fail{background:var(--bad-soft);color:var(--bad)}
+.qtext{font-family:var(--display);font-weight:600;font-size:clamp(19px,3.6vw,23px);line-height:1.3}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:13px 14px;cursor:pointer;font:inherit;color:var(--ink)}
+.opt .key{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font:500 13px var(--mono);background:var(--sunk);color:var(--muted)}
+.opt[aria-checked="true"]{border-color:var(--area,var(--accent));background:var(--surface);box-shadow:0 0 0 1px var(--area,var(--accent))}
+.opt[aria-checked="true"] .key{background:var(--area,var(--accent));color:var(--surface)}
+
+/* result */
+.score{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.score .big{font-family:var(--display);font-weight:800;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
+.review{display:flex;flex-direction:column;gap:12px}
+.ritem{border-left:3px solid var(--bad);padding:4px 0 4px 12px;display:flex;flex-direction:column;gap:4px}
+.ritem .you{color:var(--bad)} .ritem .right{color:var(--good);font-weight:600}
+.notice{padding:12px 14px;border-radius:10px;background:var(--sunk);font-size:14px}
+.notice.bad{background:var(--bad-soft);color:var(--bad)}
+.notice.good{background:var(--good-soft);color:var(--good)}
+
+/* results */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:600px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--bg);border-radius:10px;padding:12px}
+.stat b{display:block;font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filters input{flex:1;min-width:160px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--bg);color:var(--muted);font:600 13px var(--body);padding:8px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--bg);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:13px}
+tr.sub{cursor:pointer} tr.sub:hover td{background:var(--bg)}
+tr.detail td{background:var(--bg)}
+.dlist{display:flex;flex-direction:column;gap:8px;font-size:13px}
+.dlist div{display:flex;gap:8px}
+.dlist .mk{flex:none;font-family:var(--mono);width:18px}
+.dlist .ok{color:var(--good)} .dlist .no{color:var(--bad)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+/* editor */
+.qedit{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.qedit .head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.qedit .num{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.optedit{display:flex;gap:8px;align-items:center}
+.optedit input[type=radio]{width:18px;height:18px;accent-color:var(--good);flex:none}
+.optedit input[type=text]{background:var(--surface)}
+.qedit textarea{background:var(--surface)}
+.hint{font-size:12px;color:var(--muted)}
+.savebar{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+[hidden]{display:none!important}
+input[type=password],input[type=email]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.linkbtn{background:none;border:0;color:var(--muted);font:600 13px var(--body);cursor:pointer;padding:6px 4px;text-decoration:underline;text-underline-offset:3px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;padding-top:8px}
+
+/* brand */
+.brandbar{height:6px;background:var(--red);margin:-20px -16px 20px}
+.eyebrow{color:var(--red)}
+.panel{box-shadow:0 1px 2px rgb(31 26 23 / .04),0 8px 24px -12px rgb(31 26 23 / .12)}
+.btn:hover:not(:disabled){background:var(--red-dark)}
+.btn.ghost:hover:not(:disabled){background:var(--sunk)}
+.opt:hover{border-color:#D9CFC9}
+.opt[aria-checked="true"] .key{background:var(--red);color:#fff}
+.bar i{background:var(--red)}
+.area.boh .code{color:var(--boh)}
+.area.boh[aria-pressed="true"]{border-color:var(--boh)}
+.tabs button[aria-selected="true"]{box-shadow:inset 0 -3px 0 var(--red),0 1px 2px rgb(0 0 0 / .1)}
+select{appearance:auto}
+.qimg{display:block;max-width:100%;max-height:45vh;margin-inline:auto;border-radius:10px;border:1px solid var(--line);object-fit:contain;background:var(--sunk);cursor:zoom-in}
+.qimg.big{max-height:none;cursor:zoom-out}
+.ritem img{display:block;max-width:220px;max-height:160px;border-radius:8px;border:1px solid var(--line);object-fit:contain;margin-block:4px}
+.photorow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.photorow img{width:96px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.intro{display:flex;flex-direction:column;gap:10px;max-width:65ch;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.introfacts{display:flex;flex-direction:column;gap:4px;margin-top:4px;padding:12px 14px;border-left:3px solid var(--red);background:var(--red-soft);border-radius:0 8px 8px 0;font-size:14px}
+.introfacts b{color:var(--red-dark)}
+.stat{background:var(--sunk)}
+.qedit{background:var(--sunk)}
+tr.sub:hover td,tr.detail td,th{background:var(--sunk)}
+.seg button{background:var(--surface)}
+</style>
+</head>
+<body>
+<div class="brandbar" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Cucina · Staff training</p>
+      <h1>Monthly Refresher Assessment</h1>
+    </div>
+    <nav class="tabs" id="tabs" hidden>
+      <button data-tab="results" aria-selected="true">Results</button>
+      <button data-tab="edit" aria-selected="false">Edit questions</button>
+      <button data-tab="signout" aria-selected="false">Sign out</button>
+    </nav>
+  </header>
+
+  <div class="notice bad" id="cfgErr" hidden>This quiz isn't connected to its database yet. Add your Supabase URL and anon key to config.js.</div>
+
+  <!-- TAKE -->
+  <section id="view-take">
+    <div class="panel" id="step-start">
+      <div>
+        <div class="intro">
+          <p>This Monthly Refresher Assessment consists of <span class="qn">20</span> questions designed to review and reinforce your knowledge of our operational procedures, food safety requirements, customer service standards, and workplace policies.</p>
+          <p>All team members are required to complete the assessment and answer each question to the best of their knowledge. Please read each question carefully before selecting your answer.</p>
+          <p>The purpose of this assessment is to ensure that all team members remain familiar with current procedures and maintain consistent standards across the workplace.</p>
+          <div class="introfacts">
+            <span><b>Assessment:</b> <span class="qn">20</span> Questions</span>
+            <span>Please complete all questions before submitting your assessment.</span>
+          </div>
+        </div>
+        <h2 style="margin-top:6px">Your details</h2>
+      </div>
+      <div class="row2">
+        <label class="field" for="inName">Full name
+          <input type="text" id="inName" autocomplete="name" maxlength="80" placeholder="e.g. Maria Santos">
+        </label>
+        <label class="field" for="inSiteSel" id="siteSelWrap">Site / venue
+          <select id="inSiteSel"><option value="">Loading sites…</option></select>
+        </label>
+        <label class="field" for="inSiteTxt" id="siteTxtWrap" hidden>Site / venue
+          <input type="text" id="inSiteTxt" maxlength="80" placeholder="e.g. Flappy's Marsden Park">
+        </label>
+      </div>
+      <div class="field" style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-weight:600;font-size:14px">Where do you work?</span>
+        <div class="areas">
+          <button class="area foh" data-area="FOH" aria-pressed="false" type="button">
+            <span class="code">FOH</span><strong>Front of house</strong>
+            <small>Service, register, allergens, RSA, customer care</small>
+          </button>
+          <button class="area boh" data-area="BOH" aria-pressed="false" type="button">
+            <span class="code">BOH</span><strong>Back of house</strong>
+            <small>Kitchen, food safety, temperatures, cleaning</small>
+          </button>
+        </div>
+      </div>
+      <div class="notice bad" id="startErr" hidden></div>
+      <div class="actions">
+        <span class="hint" id="startHint">Enter your name and pick FOH or BOH.</span>
+        <button class="btn" id="btnStart" disabled>Start quiz</button>
+      </div>
+    </div>
+
+    <div class="panel" id="step-quiz" hidden>
+      <div class="progress">
+        <div class="qmeta"><span id="qCount">Question 1 of 20</span><span class="chip" id="qArea">FOH</span></div>
+        <div class="bar"><i id="qBar" style="width:0%"></i></div>
+      </div>
+      <p class="qtext" id="qText"></p>
+      <div id="qImgWrap"></div>
+      <div class="opts" id="qOpts" role="radiogroup"></div>
+      <div class="notice bad" id="submitErr" hidden></div>
+      <div class="actions">
+        <button class="btn ghost" id="btnBack">Back</button>
+        <button class="btn" id="btnNext" disabled>Next</button>
+      </div>
+    </div>
+
+    <div class="panel" id="step-done" hidden>
+      <p class="eyebrow" id="doneWho"></p>
+      <div class="score"><span class="big" id="doneScore">0/20</span><span class="chip" id="doneChip"></span></div>
+      <div class="notice good">Submitted. Your manager can see your result.</div>
+      <div id="reviewWrap" class="review"></div>
+      <div class="actions">
+        <span></span>
+        <button class="btn ghost" id="btnAgain">Start again</button>
+      </div>
+    </div>
+    <footer><button class="linkbtn" id="btnManager">Manager sign in</button></footer>
+  </section>
+
+  <!-- LOGIN -->
+  <section id="view-login" hidden>
+    <div class="panel" style="max-width:440px">
+      <div>
+        <h2>Manager sign in</h2>
+        <p class="muted">Sign in to see results and edit questions.</p>
+      </div>
+      <form id="loginForm" style="display:flex;flex-direction:column;gap:14px">
+        <label class="field" for="lgEmail">Email<input type="email" id="lgEmail" autocomplete="username" required></label>
+        <label class="field" for="lgPw">Password<input type="password" id="lgPw" autocomplete="current-password" required></label>
+        <div class="notice bad" id="lgErr" hidden></div>
+        <div class="actions"><button class="linkbtn" type="button" id="btnBackToQuiz">Back to quiz</button><button class="btn" type="submit" id="btnLogin">Sign in</button></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="view-results" hidden>
+    <div class="panel">
+      <div class="actions">
+        <div><h2>Submissions</h2><p class="muted">Everyone who has submitted, newest first. Click a row to see their answers.</p></div>
+        <div style="display:flex;gap:8px"><button class="btn ghost small" id="btnRefresh">Refresh</button><button class="btn ghost small" id="btnCsv">Download CSV</button></div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="filters">
+        <div class="seg" id="fArea">
+          <button aria-pressed="true" data-v="ALL">All</button><button aria-pressed="false" data-v="FOH">FOH</button><button aria-pressed="false" data-v="BOH">BOH</button>
+        </div>
+        <label class="hint" for="fFrom" style="display:flex;align-items:center;gap:6px">From
+          <select id="fFrom" style="width:auto;min-width:150px"><option value="">Earliest</option></select></label>
+        <label class="hint" for="fTo" style="display:flex;align-items:center;gap:6px">To
+          <select id="fTo" style="width:auto;min-width:150px"><option value="">Latest</option></select></label>
+        <select id="fSite" aria-label="Site" style="width:auto;min-width:150px"><option value="">All sites</option></select>
+        <input type="text" id="fSearch" placeholder="Search name">
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Name</th><th>Site</th><th>Area</th><th>Score</th><th>Result</th><th>Submitted</th></tr></thead>
+          <tbody id="resBody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDIT -->
+  <section id="view-edit" hidden>
+    <div class="panel">
+      <div class="actions">
+        <div><h2>Edit questions</h2><p class="muted">Changes go live for everyone when you save. Past results keep the questions as they were answered.</p></div>
+        <div class="seg" id="eArea"><button aria-pressed="true" data-v="FOH">FOH</button><button aria-pressed="false" data-v="BOH">BOH</button></div>
+      </div>
+      <div class="row2">
+        <label class="field" for="ePass">Pass mark (%)
+          <input type="number" id="ePass" min="0" max="100" step="5">
+        </label>
+        <div class="field" style="justify-content:flex-end"><span class="hint">Tick the circle next to the correct answer. Each question needs at least 2 options.</span></div>
+      </div>
+      <div id="eList" style="display:flex;flex-direction:column;gap:12px"></div>
+      <button class="btn ghost" id="btnAddQ">+ Add question</button>
+      <div class="qedit">
+        <h3>Sites</h3>
+        <p class="hint">One site per line, in the order you want them in the dropdown. Staff must pick one of these.</p>
+        <textarea id="eSites" rows="8" placeholder="Flappy's Marsden Park&#10;Burger Point Penrith&#10;…" style="background:var(--surface)"></textarea>
+        <div class="actions"><span class="hint" id="sitesStatus"></span><button class="btn ghost small" id="btnSaveSites">Save sites</button></div>
+      </div>
+      <div class="qedit">
+        <h3>Change my password</h3>
+        <div class="row2">
+          <label class="field" for="npw1">New password<input type="password" id="npw1" autocomplete="new-password"></label>
+          <label class="field" for="npw2">Confirm new password<input type="password" id="npw2" autocomplete="new-password"></label>
+        </div>
+        <div class="actions"><span class="hint" id="pwStatus">At least 8 characters.</span><button class="btn ghost small" id="btnChangePw">Change password</button></div>
+      </div>
+      <div class="savebar">
+        <span class="hint" id="eStatus">No unsaved changes</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" id="btnRevert">Discard changes</button>
+          <button class="btn" id="btnSave">Save questions</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const el = (tag, props = {}, kids = []) => { const n = document.createElement(tag); Object.assign(n, props); for (const k of [].concat(kids)) if (k != null) n.append(k); return n; };
+  const LETTERS = "ABCDEF";
+  const store = { get(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+  const errMsg = e => (e && (e.message || e.error_description)) || "Something went wrong. Check your connection and try again.";
+
+  const cfg = window.QUIZ_CONFIG || {};
+  if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_URL.includes("YOUR-")) { $("#cfgErr").hidden = false; }
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL || "https://invalid.supabase.co", cfg.SUPABASE_ANON_KEY || "x");
+
+  // ---------- VIEWS ----------
+  const VIEWS = ["take", "login", "results", "edit"];
+  function show(v) {
+    for (const x of VIEWS) $("#view-" + x).hidden = x !== v;
+    $("#tabs").hidden = !(v === "results" || v === "edit");
+    document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === v)));
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- TAKE ----------
+  const quizzes = { FOH: null, BOH: null };
+  const state = { area: null, idx: 0, picks: [], qs: [] };
+  const inName = $("#inName"), btnStart = $("#btnStart");
+  let sites = [];
+  const siteValue = () => (sites.length ? $("#inSiteSel").value : $("#inSiteTxt").value).trim();
+  inName.value = store.get("quiz.name");
+  async function loadSites() {
+    const { data, error } = await sb.rpc("get_sites");
+    sites = error ? [] : data;
+    const useList = sites.length > 0;
+    $("#siteSelWrap").hidden = !useList; $("#siteTxtWrap").hidden = useList;
+    const saved = store.get("quiz.site");
+    if (useList) {
+      $("#inSiteSel").replaceChildren(el("option", { value: "", textContent: "Choose your site" }), ...sites.map(n => el("option", { value: n, textContent: n })));
+      if (sites.includes(saved)) $("#inSiteSel").value = saved;
+    } else $("#inSiteTxt").value = saved;
+    checkStart();
+  }
+  $("#inSiteSel").addEventListener("change", checkStart);
+  $("#inSiteTxt").addEventListener("input", checkStart);
+
+  async function loadQuiz(area) {
+    if (quizzes[area]) return;
+    $("#startHint").innerHTML = '<span class="spinner"></span>Loading questions…';
+    const { data, error } = await sb.rpc("get_quiz", { p_area: area });
+    if (error) { $("#startErr").hidden = false; $("#startErr").textContent = "Couldn't load the questions. " + errMsg(error); return; }
+    quizzes[area] = data;
+    if (area === state.area && data.questions.length) document.querySelectorAll('.qn').forEach(n => n.textContent = data.questions.length);
+  }
+  function checkStart() {
+    const nameOk = inName.value.trim().length >= 2, siteOk = !sites.length || !!siteValue();
+    const q = state.area && quizzes[state.area];
+    btnStart.disabled = !(nameOk && siteOk && q && q.questions.length);
+    const h = $("#startHint");
+    if (!nameOk || !state.area) h.textContent = "Enter your name and pick FOH or BOH.";
+    else if (!siteOk) h.textContent = "Choose your site.";
+    else if (!q) h.innerHTML = '<span class="spinner"></span>Loading questions…';
+    else if (!q.questions.length) h.textContent = "There are no questions for this area yet.";
+    else h.textContent = `${q.questions.length} questions ready.`;
+  }
+  inName.addEventListener("input", checkStart);
+  document.querySelectorAll(".area").forEach(b => b.addEventListener("click", async () => {
+    state.area = b.dataset.area; $("#startErr").hidden = true;
+    document.querySelectorAll(".area").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    checkStart(); await loadQuiz(state.area); checkStart();
+  }));
+  btnStart.addEventListener("click", () => {
+    store.set("quiz.name", inName.value.trim()); store.set("quiz.site", siteValue());
+    state.qs = quizzes[state.area].questions;
+    state.picks = new Array(state.qs.length).fill(null);
+    state.idx = 0;
+    document.documentElement.style.setProperty("--area", state.area === "FOH" ? "var(--foh)" : "var(--boh)");
+    $("#step-start").hidden = true; $("#step-quiz").hidden = false; $("#submitErr").hidden = true;
+    renderQ();
+  });
+  function renderQ() {
+    const q = state.qs[state.idx], n = state.qs.length;
+    $("#qCount").textContent = `Question ${state.idx + 1} of ${n}`;
+    const chip = $("#qArea"); chip.textContent = state.area; chip.className = "chip " + state.area;
+    $("#qBar").style.width = (state.idx / n * 100) + "%";
+    $("#qText").textContent = q.question;
+    const iw = $("#qImgWrap"); iw.replaceChildren();
+    if (q.image) {
+      const img = el("img", { className: "qimg", src: q.image, alt: "Photo for this question", loading: "eager" });
+      img.title = "Tap to enlarge"; img.onclick = () => img.classList.toggle("big");
+      iw.append(img);
+    }
+    const box = $("#qOpts"); box.replaceChildren();
+    q.options.forEach((o, i) => {
+      const b = el("button", { type: "button", className: "opt" }, [el("span", { className: "key", textContent: LETTERS[i] }), el("span", { textContent: o })]);
+      b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(state.picks[state.idx] === i));
+      b.addEventListener("click", () => { state.picks[state.idx] = i; renderQ(); });
+      box.append(b);
+    });
+    const nxt = state.qs[state.idx + 1]; if (nxt?.image) new Image().src = nxt.image;
+    $("#btnBack").disabled = state.idx === 0;
+    $("#btnNext").textContent = state.idx === n - 1 ? "Submit answers" : "Next";
+    $("#btnNext").disabled = state.picks[state.idx] == null;
+  }
+  $("#btnBack").addEventListener("click", () => { if (state.idx > 0) { state.idx--; renderQ(); } });
+  $("#btnNext").addEventListener("click", () => { if (state.idx < state.qs.length - 1) { state.idx++; renderQ(); } else finish(); });
+  document.addEventListener("keydown", e => {
+    if ($("#view-take").hidden || $("#step-quiz").hidden || ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
+    const i = "abcdef".indexOf(e.key.toLowerCase());
+    if (i >= 0 && i < (state.qs[state.idx]?.options.length || 0)) { state.picks[state.idx] = i; renderQ(); }
+  });
+
+  async function finish() {
+    const btn = $("#btnNext"); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Submitting…';
+    const answers = {}; state.qs.forEach((q, i) => answers[q.id] = state.picks[i]);
+    const { data, error } = await sb.rpc("submit_quiz", { p_name: inName.value.trim(), p_site: siteValue(), p_area: state.area, p_answers: answers });
+    if (error) {
+      btn.disabled = false; btn.textContent = "Try submitting again";
+      const n = $("#submitErr"); n.hidden = false; n.textContent = "Your answers weren't saved. " + errMsg(error);
+      return;
+    }
+    $("#step-quiz").hidden = true; $("#step-done").hidden = false;
+    $("#doneWho").textContent = `${inName.value.trim()} · ${state.area}`;
+    $("#doneScore").textContent = `${data.score}/${data.total}`;
+    const chip = $("#doneChip"); chip.className = "chip " + (data.passed ? "pass" : "fail"); chip.textContent = `${data.pct}% · ${data.passed ? "Pass" : "Below pass mark"}`;
+    const rw = $("#reviewWrap"); rw.replaceChildren();
+    if (data.review.length) {
+      rw.append(el("h3", { textContent: `Review the ${data.review.length} you missed` }));
+      data.review.forEach(a => rw.append(el("div", { className: "ritem" }, [
+        el("strong", { textContent: a.question }),
+        a.image ? el("img", { src: a.image, alt: "" }) : null,
+        el("span", { className: "you", textContent: "Your answer: " + a.pick }),
+        el("span", { className: "right", textContent: "Correct: " + a.right }),
+        a.explain ? el("span", { className: "muted", textContent: a.explain }) : null,
+      ])));
+    } else rw.append(el("p", { textContent: "Perfect score. Nice work." }));
+    window.scrollTo(0, 0);
+  }
+  $("#btnAgain").addEventListener("click", () => { $("#step-done").hidden = true; $("#step-start").hidden = false; checkStart(); });
+
+  // ---------- MANAGER AUTH ----------
+  $("#btnManager").addEventListener("click", async () => {
+    const { data } = await sb.auth.getSession();
+    if (data.session && await checkManager()) enterManager(); else { show("login"); $("#lgEmail").focus(); }
+  });
+  $("#btnBackToQuiz").addEventListener("click", () => show("take"));
+  async function checkManager() {
+    const { data, error } = await sb.rpc("is_quiz_manager");
+    return !error && data === true;
+  }
+  $("#loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = $("#lgErr"); err.hidden = true;
+    const btn = $("#btnLogin"); btn.disabled = true; btn.textContent = "Signing in…";
+    const { error } = await sb.auth.signInWithPassword({ email: $("#lgEmail").value.trim(), password: $("#lgPw").value });
+    btn.disabled = false; btn.textContent = "Sign in";
+    if (error) { err.hidden = false; err.textContent = "Email or password is incorrect."; return; }
+    if (!(await checkManager())) { await sb.auth.signOut(); err.hidden = false; err.textContent = "This account isn't set up as a quiz manager. Ask the quiz owner to add you."; return; }
+    $("#lgPw").value = "";
+    enterManager();
+  });
+  document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", async () => {
+    const t = b.dataset.tab;
+    if (t === "signout") { await sb.auth.signOut(); rows = []; editCache = { FOH: null, BOH: null }; show("take"); return; }
+    if (t === "edit") { show("edit"); await renderEditor(); } else { show("results"); }
+  }));
+  function enterManager() { show("results"); loadResults(); }
+
+  // ---------- RESULTS ----------
+  let rows = [], fArea = "ALL", openId = null;
+  document.querySelectorAll("#fArea button").forEach(b => b.addEventListener("click", () => {
+    fArea = b.dataset.v; document.querySelectorAll("#fArea button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderResults();
+  }));
+  $("#fSearch").addEventListener("input", renderResults);
+  $("#btnRefresh").addEventListener("click", loadResults);
+  const fmtDate = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }); };
+  async function loadResults() {
+    $("#resBody").replaceChildren(el("tr", {}, el("td", { colSpan: 6, className: "empty", textContent: "Loading…" })));
+    const { data, error } = await sb.from("quiz_submissions").select("*").order("created_at", { ascending: false }).limit(2000);
+    if (error) { $("#resBody").replaceChildren(el("tr", {}, el("td", { colSpan: 6, className: "empty", textContent: "Results couldn't load. " + errMsg(error) }))); return; }
+    rows = data; fillMonths(); fillSites(); renderResults();
+  }
+  // Month key in Sydney time, e.g. "2026-09"
+  const monthKey = iso => { const p = new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Sydney", year: "numeric", month: "2-digit" }).formatToParts(new Date(iso)); return p.find(x => x.type === "year").value + "-" + p.find(x => x.type === "month").value; };
+  const monthLabel = k => { const [y, m] = k.split("-"); return new Date(Number(y), Number(m) - 1, 1).toLocaleString("en-AU", { month: "long", year: "numeric" }); };
+  function fillSites() {
+    const sel = $("#fSite"), cur = sel.value;
+    const names = [...new Set(rows.map(r => r.site).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    sel.replaceChildren(el("option", { value: "", textContent: "All sites" }), ...names.map(n => el("option", { value: n, textContent: n })));
+    sel.value = names.includes(cur) ? cur : "";
+  }
+  $("#fSite").addEventListener("change", renderResults);
+  function fillMonths() {
+    const keys = [...new Set(rows.map(r => monthKey(r.created_at)))].sort();
+    for (const [id, blank] of [["#fFrom", "Earliest"], ["#fTo", "Latest"]]) {
+      const sel = $(id), cur = sel.value;
+      sel.replaceChildren(el("option", { value: "", textContent: blank }), ...keys.map(k => el("option", { value: k, textContent: monthLabel(k) })));
+      sel.value = keys.includes(cur) ? cur : "";
+    }
+  }
+  // Returns [from, to] with from <= to; swaps the pickers if picked backwards.
+  function monthRange() {
+    let f = $("#fFrom").value, t = $("#fTo").value;
+    if (f && t && f > t) { [f, t] = [t, f]; $("#fFrom").value = f; $("#fTo").value = t; }
+    return [f, t];
+  }
+  $("#fFrom").addEventListener("change", renderResults);
+  $("#fTo").addEventListener("change", renderResults);
+  function filtered() {
+    const s = $("#fSearch").value.trim().toLowerCase(), [f, t] = monthRange(), site = $("#fSite").value;
+    return rows.filter(r => {
+      const k = monthKey(r.created_at);
+      return (fArea === "ALL" || r.area === fArea) && (!site || r.site === site) && (!f || k >= f) && (!t || k <= t) && (!s || (r.name + " " + r.site).toLowerCase().includes(s));
+    });
+  }
+  function renderResults() {
+    const list = filtered();
+    const people = new Set(list.map(r => r.name.trim().toLowerCase()));
+    const passRate = list.length ? Math.round(list.filter(r => r.passed).length / list.length * 100) : 0;
+    const avg = list.length ? Math.round(list.reduce((a, r) => a + r.pct, 0) / list.length) : 0;
+    const st = $("#stats"); st.replaceChildren();
+    [[list.length, "Submissions"], [people.size, "People"], [avg + "%", "Average score"], [passRate + "%", "Pass rate"]]
+      .forEach(([v, l]) => st.append(el("div", { className: "stat" }, [el("b", { textContent: v }), el("span", { textContent: l })])));
+    const tb = $("#resBody"); tb.replaceChildren();
+    if (!list.length) { tb.append(el("tr", {}, el("td", { colSpan: 6, className: "empty", textContent: rows.length ? "No submissions match this filter." : "No one has submitted yet." }))); return; }
+    for (const r of list) {
+      const tr = el("tr", { className: "sub" }, [
+        el("td", {}, el("strong", { textContent: r.name })),
+        el("td", { textContent: r.site || "–" }),
+        el("td", {}, el("span", { className: "chip " + r.area, textContent: r.area })),
+        el("td", { className: "num", textContent: `${r.score}/${r.total} · ${r.pct}%` }),
+        el("td", {}, el("span", { className: "chip " + (r.passed ? "pass" : "fail"), textContent: r.passed ? "Pass" : "Fail" })),
+        el("td", { className: "num", textContent: fmtDate(r.created_at) }),
+      ]);
+      tr.tabIndex = 0;
+      const toggle = () => { openId = openId === r.id ? null : r.id; renderResults(); };
+      tr.addEventListener("click", toggle); tr.addEventListener("keydown", e => { if (e.key === "Enter") toggle(); });
+      tb.append(tr);
+      if (openId === r.id) {
+        const dl = el("div", { className: "dlist" });
+        (r.answers || []).forEach((a, i) => dl.append(el("div", {}, [
+          el("span", { className: "mk " + (a.ok ? "ok" : "no"), textContent: a.ok ? "✓" : "✗" }),
+          el("span", {}, [el("span", { textContent: `${i + 1}. ${a.question} ` }), el("span", { className: a.ok ? "ok" : "no", textContent: "— " + (a.pick || "(no answer)") }), a.ok ? null : el("span", { className: "muted", textContent: ` (correct: ${a.right})` })]),
+        ])));
+        tb.append(el("tr", { className: "detail" }, el("td", { colSpan: 6 }, dl)));
+      }
+    }
+  }
+  $("#btnCsv").addEventListener("click", () => {
+    const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const tz = { timeZone: "Australia/Sydney" };
+    const lines = [["Month", "Date", "Time", "Name", "Site", "Area", "Score", "Total", "Percent", "Result"].join(",")];
+    filtered().forEach(r => {
+      const d = new Date(r.created_at);
+      lines.push([monthLabel(monthKey(r.created_at)), d.toLocaleDateString("en-AU", { ...tz, day: "2-digit", month: "2-digit", year: "numeric" }), d.toLocaleTimeString("en-AU", { ...tz, hour: "2-digit", minute: "2-digit" }),
+        r.name, r.site, r.area, r.score, r.total, r.pct + "%", r.passed ? "Pass" : "Fail"].map(esc).join(","));
+    });
+    const [f, t] = monthRange();
+    const range = !f && !t ? "all-months" : f === t ? f : `${f || "start"}-to-${t || "latest"}`;
+    const siteSlug = $("#fSite").value.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const parts = ["refresher-results", range, siteSlug || null, fArea !== "ALL" ? fArea : null].filter(Boolean);
+    const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = el("a", { href: URL.createObjectURL(blob), download: parts.join("-") + ".csv" });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  // ---------- EDITOR ----------
+  let eArea = "FOH", editCache = { FOH: null, BOH: null }, dirty = { FOH: false, BOH: false };
+  document.querySelectorAll("#eArea button").forEach(b => b.addEventListener("click", async () => {
+    eArea = b.dataset.v; document.querySelectorAll("#eArea button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); await renderEditor();
+  }));
+  async function loadEdit(area) {
+    const [q, s] = await Promise.all([
+      sb.from("quiz_questions").select("id,question,options,answer,explain,image_url").eq("area", area).order("position"),
+      sb.from("quiz_settings").select("pass_mark").eq("area", area).maybeSingle(),
+    ]);
+    if (q.error) throw q.error;
+    editCache[area] = { passMark: s.data?.pass_mark ?? 80, questions: q.data.map(({ image_url, ...r }) => ({ ...r, image: image_url || "" })) };
+  }
+  const markDirty = () => { dirty[eArea] = true; setStatus(); };
+  function setStatus(msg) {
+    $("#eStatus").textContent = msg || (dirty.FOH || dirty.BOH ? `Unsaved changes: ${["FOH", "BOH"].filter(a => dirty[a]).join(" and ")}` : "No unsaved changes");
+  }
+  let tmpId = 0;
+  function photoRow(q) {
+    const row = el("div", { className: "photorow" });
+    const file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp,image/*", hidden: true });
+    const status = el("span", { className: "hint" });
+    const pick = el("button", { className: "btn ghost small", textContent: q.image ? "Replace photo" : "+ Add photo" });
+    pick.onclick = () => file.click();
+    file.onchange = async () => {
+      const f = file.files[0]; if (!f) return;
+      pick.disabled = true; status.innerHTML = '<span class="spinner"></span>Uploading…';
+      try { q.image = await uploadPhoto(f); markDirty(); renderEditor(); }
+      catch (e) { status.textContent = errMsg(e); pick.disabled = false; }
+    };
+    if (q.image) row.append(el("img", { src: q.image, alt: "Question photo" }));
+    row.append(pick);
+    if (q.image) {
+      const rm = el("button", { className: "btn danger small", textContent: "Remove photo" });
+      rm.onclick = () => { q.image = ""; markDirty(); renderEditor(); };
+      row.append(rm);
+    }
+    row.append(status, file);
+    return row;
+  }
+  // Shrink to max 1400px and re-encode as JPEG before upload (keeps phones fast on site wifi/4G).
+  async function shrink(file) {
+    let bmp;
+    try { bmp = await createImageBitmap(file); } catch { throw new Error("This photo type can't be read. Use a JPG or PNG."); }
+    const scale = Math.min(1, 1400 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas"); c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error("Couldn't process the photo.")), "image/jpeg", 0.82));
+  }
+  async function uploadPhoto(file) {
+    const blob = await shrink(file);
+    const id = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+    const path = `${eArea}/${id}.jpg`;
+    const bucket = sb.storage.from("quiz-images");
+    const { error } = await bucket.upload(path, blob, { contentType: "image/jpeg", upsert: false });
+    if (error) throw new Error("Upload failed. " + errMsg(error));
+    return bucket.getPublicUrl(path).data.publicUrl;
+  }
+  let sitesLoaded = false;
+  async function loadSiteEditor() {
+    if (sitesLoaded) return;
+    const { data } = await sb.rpc("get_sites");
+    $("#eSites").value = (data || []).join("\n"); sitesLoaded = true;
+    $("#sitesStatus").textContent = `${(data || []).length} sites`;
+  }
+  $("#eSites").addEventListener("input", () => $("#sitesStatus").textContent = "Unsaved site changes");
+  $("#btnSaveSites").addEventListener("click", async () => {
+    const list = $("#eSites").value.split("\n").map(x => x.trim()).filter(Boolean);
+    const st = $("#sitesStatus"); st.textContent = "Saving…";
+    const { error } = await sb.rpc("save_sites", { p_sites: list });
+    if (error) return st.textContent = "Not saved. " + errMsg(error);
+    st.textContent = `Saved ${list.length} sites.`; await loadSites();
+  });
+  async function renderEditor() {
+    loadSiteEditor();
+    const list = $("#eList");
+    if (!editCache[eArea]) {
+      list.replaceChildren(el("p", { className: "muted", innerHTML: '<span class="spinner"></span>Loading questions…' }));
+      try { await loadEdit(eArea); } catch (e) { list.replaceChildren(el("p", { className: "notice bad", textContent: "Couldn't load questions. " + errMsg(e) })); return; }
+    }
+    const d = editCache[eArea];
+    $("#ePass").value = d.passMark;
+    list.replaceChildren();
+    d.questions.forEach((q, qi) => {
+      q._k ??= q.id || "new" + (++tmpId);
+      const box = el("div", { className: "qedit" });
+      const up = el("button", { className: "btn ghost small", textContent: "↑", title: "Move up", disabled: qi === 0 });
+      const down = el("button", { className: "btn ghost small", textContent: "↓", title: "Move down", disabled: qi === d.questions.length - 1 });
+      const del = el("button", { className: "btn danger small", textContent: "Delete" });
+      up.onclick = () => { [d.questions[qi - 1], d.questions[qi]] = [d.questions[qi], d.questions[qi - 1]]; markDirty(); renderEditor(); };
+      down.onclick = () => { [d.questions[qi + 1], d.questions[qi]] = [d.questions[qi], d.questions[qi + 1]]; markDirty(); renderEditor(); };
+      del.onclick = () => {
+        if (del.dataset.arm) { d.questions.splice(qi, 1); markDirty(); renderEditor(); }
+        else { del.dataset.arm = "1"; del.textContent = "Confirm delete"; setTimeout(() => { if (del.isConnected) { delete del.dataset.arm; del.textContent = "Delete"; } }, 3000); }
+      };
+      box.append(el("div", { className: "head" }, [el("span", { className: "num", textContent: `Q${qi + 1}` }), el("div", { style: "display:flex;gap:6px" }, [up, down, del])]));
+      const qt = el("textarea", { id: `q-${q._k}`, value: q.question, rows: 2, placeholder: "Question", maxLength: 500 });
+      qt.oninput = () => { q.question = qt.value; markDirty(); };
+      box.append(qt, photoRow(q));
+      q.options.forEach((o, oi) => {
+        const r = el("input", { type: "radio", name: `ans-${q._k}`, checked: q.answer === oi, title: "Correct answer" });
+        r.onchange = () => { q.answer = oi; markDirty(); };
+        const t = el("input", { type: "text", id: `o-${q._k}-${oi}`, value: o, placeholder: `Option ${LETTERS[oi]}` });
+        t.oninput = () => { q.options[oi] = t.value; markDirty(); };
+        const rm = el("button", { className: "btn ghost small", textContent: "✕", title: "Remove option", disabled: q.options.length <= 2 });
+        rm.onclick = () => { q.options.splice(oi, 1); if (q.answer === oi) q.answer = 0; else if (q.answer > oi) q.answer--; markDirty(); renderEditor(); };
+        box.append(el("div", { className: "optedit" }, [r, t, rm]));
+      });
+      if (q.options.length < 6) {
+        const add = el("button", { className: "btn ghost small", textContent: "+ Option", style: "align-self:flex-start" });
+        add.onclick = () => { q.options.push(""); markDirty(); renderEditor(); };
+        box.append(add);
+      }
+      const ex = el("input", { type: "text", id: `x-${q._k}`, value: q.explain || "", placeholder: "Explanation shown when someone gets it wrong (optional)" });
+      ex.style.background = "var(--surface)";
+      ex.oninput = () => { q.explain = ex.value; markDirty(); };
+      box.append(ex);
+      list.append(box);
+    });
+    setStatus();
+  }
+  $("#ePass").addEventListener("input", () => { if (editCache[eArea]) { editCache[eArea].passMark = Math.max(0, Math.min(100, Number($("#ePass").value) || 0)); markDirty(); } });
+  $("#btnAddQ").addEventListener("click", () => { editCache[eArea]?.questions.push({ id: null, question: "", options: ["", "", "", ""], answer: 0, explain: "", image: "" }); markDirty(); renderEditor().then(() => $("#eList").lastElementChild?.querySelector("textarea")?.focus()); });
+  $("#btnRevert").addEventListener("click", () => { editCache = { FOH: null, BOH: null }; dirty = { FOH: false, BOH: false }; renderEditor(); });
+  $("#btnSave").addEventListener("click", async () => {
+    const areas = ["FOH", "BOH"].filter(a => dirty[a]);
+    if (!areas.length) return setStatus("Nothing to save");
+    $("#btnSave").disabled = true; setStatus("Saving…");
+    try {
+      for (const a of areas) {
+        const d = editCache[a];
+        const payload = d.questions.map(q => {
+          const opts = []; let ans = 0;
+          q.options.forEach((o, i) => { if (o.trim()) { if (i === q.answer) ans = opts.length; opts.push(o.trim()); } });
+          return { id: q.id || null, question: q.question.trim(), options: opts, answer: ans, explain: (q.explain || "").trim(), image: q.image || "" };
+        }).filter(q => q.question);
+        const { error } = await sb.rpc("save_quiz", { p_area: a, p_pass_mark: d.passMark, p_questions: payload });
+        if (error) { eArea = a; throw new Error(`${a}: ${errMsg(error)}`); }
+        dirty[a] = false; editCache[a] = null;
+      }
+      await renderEditor(); setStatus("Saved. Staff get the new questions next time they start.");
+    } catch (e) { setStatus("Not saved. " + errMsg(e)); }
+    $("#btnSave").disabled = false;
+  });
+  $("#btnChangePw").addEventListener("click", async () => {
+    const a = $("#npw1").value, b = $("#npw2").value, st = $("#pwStatus");
+    if (a.length < 8) return st.textContent = "Use at least 8 characters.";
+    if (a !== b) return st.textContent = "The two passwords don't match.";
+    const { error } = await sb.auth.updateUser({ password: a });
+    if (error) return st.textContent = "Couldn't change the password. " + errMsg(error);
+    $("#npw1").value = $("#npw2").value = ""; st.textContent = "Password changed.";
+  });
+
+  loadSites();
+  if (location.hash === "#manager") $("#btnManager").click();
+})();
+</script>
+</body>
+</html>
